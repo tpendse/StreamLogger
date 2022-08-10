@@ -5,6 +5,8 @@
 #include "Utilities.h"
 #include <filesystem>
 #include <fstream>
+#include <memory>
+#include <random>
 
 #include "Logger.h"
 
@@ -36,15 +38,40 @@ std::string GetFileContents(const std::string& filename)
 	}
 }
 
+class LogFileCleanup
+{
+//private:
+//	std::vector<std::string> _logFilenames;
+
+public:
+	static std::string Get() {
+		std::string str("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz");
+		std::random_device device;
+		std::mt19937 generator(device());
+		std::shuffle(str.begin(), str.end(), generator);
+		return std::string("TestLog_") + str.substr(0, 10) + ".log";
+	}
+};
+
 //======================================================================================================
+
+std::unique_ptr<Logger> logger;
+
+std::string LastLogFilename;
+
+void CreateLogger()
+{
+	logger.reset(new Logger(LogFileCleanup::Get()));
+	LastLogFilename = logger->Filename();
+}
 
 TEST_CASE("Logger Tests", "[Logger]")
 {
 	GIVEN("Initializing logger")
 	{
-		Logger logger;
+		CreateLogger();
 		std::filesystem::path cwd = std::filesystem::current_path();
-		const std::string log_filename = logger.Filename();
+		const std::string log_filename = logger->Filename();
 		const std::string log_fullpath = JoinPaths(cwd.string(), log_filename);
 
 		WHEN("Logger is constructed")
@@ -52,7 +79,7 @@ TEST_CASE("Logger Tests", "[Logger]")
 			THEN("Defaults are correct")
 			{
 				REQUIRE_FALSE(log_filename.empty());
-				REQUIRE(logger.GetEnabled());
+				REQUIRE(logger->GetEnabled());
 			}
 		}
 
@@ -68,9 +95,9 @@ TEST_CASE("Logger Tests", "[Logger]")
 
 	GIVEN("Enabled logger available")
 	{
-		Logger logger;
+		CreateLogger();
 		std::filesystem::path cwd = std::filesystem::current_path();
-		const std::string log_filename = logger.Filename();
+		const std::string log_filename = logger->Filename();
 		const std::string log_fullpath = JoinPaths(cwd.string(), log_filename);
 
 		/*
@@ -80,8 +107,8 @@ TEST_CASE("Logger Tests", "[Logger]")
 
 		WHEN("Logging info message")
 		{
-			logger.Info() << INFO_TEST_MESSAGE;
-			logger.Flush();
+			logger->Info() << INFO_TEST_MESSAGE;
+			logger->Flush();
 
 			THEN("Message is logged")
 			{
@@ -95,8 +122,8 @@ TEST_CASE("Logger Tests", "[Logger]")
 
 		WHEN("Logging warning message")
 		{
-			logger.Warn() << WARN_TEST_MESSAGE;
-			logger.Flush();
+			logger->Warn() << WARN_TEST_MESSAGE;
+			logger->Flush();
 
 			THEN("Message is logged")
 			{
@@ -110,8 +137,8 @@ TEST_CASE("Logger Tests", "[Logger]")
 
 		WHEN("Logging error message")
 		{
-			logger.Error() << ERROR_TEST_MESSAGE;
-			logger.Flush();
+			logger->Error() << ERROR_TEST_MESSAGE;
+			logger->Flush();
 
 			THEN("Message is logged")
 			{
@@ -129,17 +156,17 @@ TEST_CASE("Logger Tests", "[Logger]")
 		// Sleep for some time so that the filestamps don't overlap!
 		std::this_thread::sleep_for(std::chrono::milliseconds(750));
 
-		Logger logger;
+		CreateLogger();
 		std::filesystem::path cwd = std::filesystem::current_path();
-		const std::string log_filename = logger.Filename();
+		const std::string log_filename = logger->Filename();
 		const std::string log_fullpath = JoinPaths(cwd.string(), log_filename);
 
-		logger.SetEnabled(false);
+		logger->SetEnabled(false);
 
 		WHEN("Logging info message")
 		{
-			logger.Info() << INFO_TEST_MESSAGE;
-			logger.Flush();
+			logger->Info() << INFO_TEST_MESSAGE;
+			logger->Flush();
 
 			THEN("Message is `not` logged")
 			{
@@ -151,8 +178,8 @@ TEST_CASE("Logger Tests", "[Logger]")
 
 		WHEN("Logging warning message")
 		{
-			logger.Warn() << WARN_TEST_MESSAGE;
-			logger.Flush();
+			logger->Warn() << WARN_TEST_MESSAGE;
+			logger->Flush();
 
 			THEN("Message is `not` logged")
 			{
@@ -164,8 +191,8 @@ TEST_CASE("Logger Tests", "[Logger]")
 
 		WHEN("Logging error message")
 		{
-			logger.Error() << ERROR_TEST_MESSAGE;
-			logger.Flush();
+			logger->Error() << ERROR_TEST_MESSAGE;
+			logger->Flush();
 
 			THEN("Message is `not` logged")
 			{

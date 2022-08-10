@@ -47,6 +47,10 @@ Logger::Logger(const std::string& path) : _enabled(false), _streamPtr(nullptr)
 
 Logger::~Logger()
 {
+	if (_streamPtr && _enabled) {
+		auto stream = dynamic_cast<std::ofstream*>(_streamPtr.get());
+		stream->close();
+	}
 	this->Flush();
 }
 
