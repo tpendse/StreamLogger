@@ -1,22 +1,18 @@
 #pragma once
 
-#include <iostream>
-#include "Logger.h"
+#define CATCH_CONFIG_RUNNER
+#include <catch2/catch.hpp>
 
-int main()
+int main(int argc, const char* argv[])
 {
-	StreamLogger::Logger logger;
+	const int returnCode = Catch::Session().run(argc, argv);
 
-	logger.Info() << "This is a info" << std::endl;
-	logger.Warn() << "This is a warning" << std::endl;
-	logger.Error() << "This is an error" << std::endl;
+#ifdef _WIN32
+	system("pause");
+#else
+	std::cout << "Press any key to continue ...";
+	getch();
+#endif
 
-	std::cout << "Logger enabled? " << logger.GetEnabled() << std::endl;
-	std::cout << "Disabling logger ..." << std::endl;
-
-	logger.SetEnabled(false);
-
-	logger.Info() << "DISABLED This is a info" << std::endl;
-	logger.Warn() << "DISABLED This is a warning" << std::endl;
-	logger.Error() << "DISABLED This is an error" << std::endl;
+	return returnCode;
 }
