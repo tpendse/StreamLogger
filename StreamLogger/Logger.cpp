@@ -36,6 +36,17 @@ constexpr const char* LOG_ENTRY_ERROR_TAG = "[ERROR] : ";
 
 std::mutex Logger::s_lock;
 
+/*
+* Join the paths with appropriate delimiters
+*/
+static std::string JoinPaths(const std::string& path1, const std::string& path2)
+{
+	const std::filesystem::path fsPath1 = path1;
+	const std::filesystem::path fsPath2 = path2;
+	const std::filesystem::path joined = fsPath1 / fsPath2;
+	return joined.string();
+}
+
 Logger::Logger(const std::string& path) : _enabled(false), _streamPtr(nullptr)
 {
 	const std::string logfile = GetTimeStampAsFormat(LOG_FILENAME_FORMAT);

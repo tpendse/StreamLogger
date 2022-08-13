@@ -3,7 +3,6 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch2/catch.hpp>
 
-
 int main(int argc, const char* argv[])
 {
 	const int returnCode = Catch::Session().run(argc, argv);
