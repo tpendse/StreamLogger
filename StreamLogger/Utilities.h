@@ -18,7 +18,12 @@ namespace
 		bool startCorrect = false;
 		bool endCorrect = false;
 
-		while (!startCorrect || !endCorrect)
+		// Single character check start is space or not
+		if (start == end) {
+			return std::isspace(*start) ? "" : str;
+		}
+
+		while (startCorrect && endCorrect)
 		{
 			startCorrect = !std::isspace(*start);
 			endCorrect = !std::isspace(*end);
@@ -63,8 +68,11 @@ namespace
 				if (trim)
 				{
 					token = Trim(token);
+					if (!token.empty())
+						output.push_back(token);
 				}
-				output.push_back(token);
+				else
+					output.push_back(token);
 			}
 		}
 		return output;

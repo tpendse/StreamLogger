@@ -16,6 +16,12 @@ constexpr const char* INFO_TEST_MESSAGE = "INFORMATION";
 constexpr const char* WARN_TEST_MESSAGE = "WARNING";
 constexpr const char* ERROR_TEST_MESSAGE = "ERROR";
 
+#ifdef _WIN32
+#define NEW_LINE (const char)'\r\n'
+#else
+#define NEW_LINE (const char)'\n'
+#endif
+
 //======================================================================================================
 
 std::string GetFileContents(const std::string& filename)
@@ -59,15 +65,36 @@ std::unique_ptr<Logger> logger;
 
 std::string LastLogFilename;
 
-void CreateLogger()
+void CreateLogger(bool empty = true)
 {
-	logger.reset(new Logger(LogFileCleanup::Get()));
+	if (empty) {
+		logger.reset(new Logger());
+	}
+	else {
+		logger.reset(new Logger(LogFileCleanup::Get()));
+	}
 	LastLogFilename = logger->Filename();
+
+	// Remove the earlier log file if it already exists
+	if (std::filesystem::exists(LastLogFilename))
+	{
+		for(unsigned short i = 0; i < 5; ++i)
+		{
+			try {
+				if (std::filesystem::remove(LastLogFilename))
+					break;
+			}
+			catch (...) {
+				// Wait before trying again
+				std::this_thread::sleep_for(std::chrono::milliseconds(750));
+			}
+		}
+	}
 }
 
 TEST_CASE("Logger Tests", "[Logger]")
 {
-	GIVEN("Initializing logger")
+	GIVEN("Initializing logger without path")
 	{
 		CreateLogger();
 		std::filesystem::path cwd = std::filesystem::current_path();
@@ -113,10 +140,13 @@ TEST_CASE("Logger Tests", "[Logger]")
 			THEN("Message is logged")
 			{
 				const std::string contents = GetFileContents(log_fullpath);
-				const auto parts = Split(contents);
+				const auto parts = Split(contents, NEW_LINE, true);
 
 				REQUIRE(parts.size() == 4);
-				REQUIRE(parts[3] == INFO_TEST_MESSAGE);
+
+				auto msgparts = Split(parts[3]);
+				REQUIRE(msgparts.size() == 5);
+				REQUIRE(msgparts[4] == INFO_TEST_MESSAGE);
 			}
 		}
 
@@ -128,10 +158,13 @@ TEST_CASE("Logger Tests", "[Logger]")
 			THEN("Message is logged")
 			{
 				const std::string contents = GetFileContents(log_fullpath);
-				const auto parts = Split(contents);
+				const auto parts = Split(contents, NEW_LINE, true);
 
 				REQUIRE(parts.size() == 4);
-				REQUIRE(parts[3] == WARN_TEST_MESSAGE);
+
+				auto msgparts = Split(parts[3]);
+				REQUIRE(msgparts.size() == 5);
+				REQUIRE(msgparts[4] == WARN_TEST_MESSAGE);
 			}
 		}
 
@@ -143,10 +176,13 @@ TEST_CASE("Logger Tests", "[Logger]")
 			THEN("Message is logged")
 			{
 				const std::string contents = GetFileContents(log_fullpath);
-				const auto parts = Split(contents);
+				const auto parts = Split(contents, NEW_LINE, true);
 
 				REQUIRE(parts.size() == 4);
-				REQUIRE(parts[3] == ERROR_TEST_MESSAGE);
+
+				auto msgparts = Split(parts[3]);
+				REQUIRE(msgparts.size() == 4);
+				REQUIRE(msgparts[3] == ERROR_TEST_MESSAGE);
 			}
 		}
 	}
