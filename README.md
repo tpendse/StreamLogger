@@ -1,12 +1,20 @@
-# StreamLogger
-Logger as a stream to make logging easier
+<p align="center" style="font-size: 30px">
+    << <strong>StreamLogger</strong> >>
+</p>
+
+<p align="center">
+Use a logger as a stream to make logging easier
+</p>
+
 
 ## Logger as a stream
-The most annoying thing about loggers is text formatting. If you have data of different data types you need to use `sprintf`s or `stringstreams` convert to  `strings`.
-This is even more annoying since modern C++ suggests you stream data to a file pointer anyways.
+The most annoying thing about loggers is text formatting. If you have data of different data types you need to use `sprintf`s or `stringstream`s convert to  `string`s.
+This is even more annoying since modern C++ suggests you stream data to a file pointer anyways. 
+Wouldn't it be nice to stream whatever you want, like `cout` & `cerr` to a logger instead? Where the logger would append timestamps and details to messages? 
 
-This is where `StreamLogger` comes in
+This is where `StreamLogger` comes in . . .
 
+***
 
 ### How do I use it?
 
@@ -52,7 +60,9 @@ StreamLogger Log : Dated 2022-08-09 16:30:24
 [16:30:24] [ERROR] : This is message #3
 ```
 
-## Disabling the logger
+</br>
+
+### Disabling the logger
 
 To avoid convoluted code to enable & disable logging, enable or disable logging entirely by
 
@@ -72,8 +82,9 @@ StreamLogger Log : Dated 2022-08-09 16:30:24
 [16:30:24] [INFO ] : This will be logged ... 
 ```
 
+</br>
 
-## Multiple sessions
+### Multiple sessions
 
 On every logger construction, writing to existing log file appends logs
 
@@ -109,7 +120,8 @@ StreamLogger Log : Dated 2022-08-09 16:30:54
 [16:30:54] [WARN ] : This is the next session! 
 ```
 
+</br>
 
-## Multithreading
+### Multithreading
 
 Stream Logger is thread safe internally. However, (currently) logging does happen on the caller thread.
