@@ -92,7 +92,7 @@ On every logger construction, writing to existing log file appends logs
 /* Scope for First session */
 {
     Logger loggerTheFirst;
-    loggerTheFirst.Info() << "This is session #1 << std::endl;
+    loggerTheFirst.Info() << "This is session #1" << std::endl;
 }
 
 /* Sleep for 30 s */
@@ -100,7 +100,7 @@ On every logger construction, writing to existing log file appends logs
 /* Scope for Second session */
 {
     Logger loggerTheSecond;
-    loggerTheSecond.Warn() << "This is the next session! << std::endl;
+    loggerTheSecond.Warn() << "This is the next session!" << std::endl;
 }
 ```
 
